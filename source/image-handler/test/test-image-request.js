@@ -112,7 +112,7 @@ describe('setup()', function() {
                 requestType: 'Custom',
                 bucket: 'allowedBucket001',
                 key: 'custom-image.jpg',
-                edits: { 
+                edits: {
                     grayscale: true,
                     rotate: 90
                 },
@@ -180,11 +180,11 @@ describe('getOriginalImage()', function() {
             const sinon = require('sinon');
             const getObject = S3.prototype.getObject = sinon.stub();
             getObject.withArgs({Bucket: 'invalidBucket', Key: 'invalidKey'}).returns({
-                promise: () => { 
+                promise: () => {
                     return Promise.reject({
                         code: 500,
                         message: 'SimulatedInvalidParameterException'
-                    }) 
+                    })
                 }
             });
             // Act
@@ -472,6 +472,21 @@ describe('parseImageKey()', function() {
             });
         });
     });
+    describe('005/thumborPublicRequestType', function() {
+        it(`Should pass if a public image key value is provided in the thumbor
+            request format`, function() {
+            // Arrange
+            const event = {
+                path : '/filters:rotate(90)/filters:grayscale()/public/as57ss/thumbor-image.jpg'
+            }
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.parseImageKey(event, 'Thumbor');
+            // Assert
+            const expectedResult = 'public/as57ss/thumbor-image.jpg';
+            assert.deepEqual(result, expectedResult);
+        });
+    });
 });
 
 // ----------------------------------------------------------------------------
@@ -553,7 +568,7 @@ describe('parseRequestType()', function() {
 // ----------------------------------------------------------------------------
 describe('decodeRequest()', function() {
     describe('001/validRequestPathSpecified', function() {
-        it(`Should pass if a valid base64-encoded path has been specified`, 
+        it(`Should pass if a valid base64-encoded path has been specified`,
             function() {
             // Arrange
             const event = {
@@ -571,7 +586,7 @@ describe('decodeRequest()', function() {
         });
     });
     describe('002/invalidRequestPathSpecified', function() {
-        it(`Should throw an error if a valid base64-encoded path has not been specified`, 
+        it(`Should throw an error if a valid base64-encoded path has not been specified`,
             function() {
             // Arrange
             const event = {
@@ -590,7 +605,7 @@ describe('decodeRequest()', function() {
         });
     });
     describe('003/noPathSpecified', function() {
-        it(`Should throw an error if no path is specified at all`, 
+        it(`Should throw an error if no path is specified at all`,
             function() {
             // Arrange
             const event = {}
