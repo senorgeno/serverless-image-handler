@@ -62,6 +62,27 @@ describe('process()', function() {
             assert.deepEqual(thumborMapping.edits, expectedResult.edits);
         });
     });
+    describe('003/thumborRequestDoesNotUseImageNameInProcessing', function() {
+        it(`Should pass if the proper edit translations are applied when an image has thumbor values in it's name`, function() {
+            // Arrange
+            const event = {
+                path : "/400x400/test-image-001-600x800.jpg"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: {
+                        width: 400,
+                        height: 400
+                    },
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
 });
 
 // ----------------------------------------------------------------------------
