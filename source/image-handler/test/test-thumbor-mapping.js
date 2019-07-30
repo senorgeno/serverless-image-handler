@@ -30,12 +30,33 @@ describe('process()', function() {
             thumborMapping.process(event);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: {
                         width: 200,
                         height: 300
                     },
                     grayscale: true
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
+    describe('002/thumborRequestWithCaseInsensitiveExtension', function() {
+        it(`Should pass if the proper edit translations are applied with case insensitive image`, function() {
+            // Arrange
+            const event = {
+                path : "/200x300/test-image-001.JPG"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: {
+                        width: 200,
+                        height: 300
+                    },
                 }
             };
             assert.deepEqual(thumborMapping.edits, expectedResult.edits);
@@ -187,7 +208,7 @@ describe('mapFilter()', function() {
             const expectedResult = {
                 edits: { convolve: {
                     width: 3,
-                    height: 3, 
+                    height: 3,
                     kernel: [1,2,1,2,4,2,1,2,1]
                 }}
             };
@@ -287,7 +308,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: {
                         fit: 'inside',
                         height: undefined,
@@ -310,7 +331,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: {
                         fit: 'inside',
                         height: undefined,
@@ -338,7 +359,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: {
                         height: 60,
                         width: 60
@@ -374,7 +395,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     jpeg: {
                         quality: 50
                     }
@@ -394,7 +415,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     png: {
                         quality: 50
                     }
@@ -414,7 +435,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     webp: {
                         quality: 50
                     }
@@ -434,7 +455,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     tiff: {
                         quality: 50
                     }
@@ -470,7 +491,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     tint: {
                         r: 25.5,
                         g: 25.5,
@@ -492,7 +513,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     rotate: 75
                 }
             };
@@ -510,7 +531,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     sharpen: 3.5
                 }
             };
@@ -528,7 +549,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: { fit: 'fill' }
                 }
             };
@@ -547,7 +568,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: { fit: 'fill' }
                 }
             };
@@ -567,7 +588,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: { fit: 'fill' }
                 },
                 sizingMethod: undefined
@@ -588,7 +609,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: { fit: 'fill' }
                 },
                 sizingMethod: "cover"
@@ -609,7 +630,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: {}
                 },
                 sizingMethod: "fit-in"
@@ -628,7 +649,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     rotate: 0
                 }
             };
@@ -646,7 +667,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     rotate: 0
                 }
             };
@@ -664,7 +685,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: {
                         fit: 'inside'
                     }
@@ -685,7 +706,7 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { 
+                edits: {
                     resize: {
                         fit: 'inside'
                     }
@@ -695,7 +716,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('032/elseCondition', function() {
-        it(`Should pass if undefined is returned for an unsupported filter`, 
+        it(`Should pass if undefined is returned for an unsupported filter`,
             function() {
             // Arrange
             const edit = 'filters:notSupportedFilter()';

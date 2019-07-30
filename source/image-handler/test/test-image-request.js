@@ -561,6 +561,21 @@ describe('parseRequestType()', function() {
             });
         });
     });
+    describe('005/thumborRequestTypeWithCaseInsensitiveImageExtension', function() {
+        it(`Should pass if the method detects a thumbor request with a case insenstive image extension`, function() {
+            // Arrange
+            const event = {
+                path: '/filters-rotate(90)/filters-grayscale()/thumbor-image.JPG'
+            }
+            process.env = {};
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.parseRequestType(event);
+            // Assert
+            const expectedResult = 'Thumbor';
+            assert.deepEqual(result, expectedResult);
+        });
+    });
 });
 
 // ----------------------------------------------------------------------------
