@@ -487,6 +487,20 @@ describe('parseImageKey()', function() {
             assert.deepEqual(result, expectedResult);
         });
     });
+    describe('006/thumborSpecialCharactersRequestType', function() {
+        it(`Should pass if a special characters exist in the request`, function() {
+            // Arrange
+            const event = {
+                path : '288x279/public/restaurant/2096/a9dc8d5701/unnamed%2B7-magic.jpg'
+            }
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.parseImageKey(event, 'Thumbor');
+            // Assert
+            const expectedResult = 'public/restaurant/2096/a9dc8d5701/unnamed+7-magic.jpg';
+            assert.deepEqual(result, expectedResult);
+        });
+    });
 });
 
 // ----------------------------------------------------------------------------

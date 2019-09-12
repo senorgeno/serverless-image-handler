@@ -139,7 +139,7 @@ class ImageRequest {
             // Parse the key from the end of the path
             if ((event["path"]).search(/public/) !== -1) { // for public path images
                 const key = (event["path"]).match(new RegExp("/public/([^]+)"));
-                return `public/${key[1]}`;
+                return `public/${decodeURIComponent(key[1])}`;
             } else {
                 const key = (event["path"]).split("/");
                 return key[key.length - 1];
