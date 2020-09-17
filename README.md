@@ -58,3 +58,12 @@ Licensed under the Amazon Software License (the "License"). You may not use this
     http://aws.amazon.com/asl/
 
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+## FirsTable Settings
+```
+export TEMPLATE_OUTPUT_BUCKET=firsttable-cloudformation-scripts
+export DIST_OUTPUT_BUCKET=firsttable-cloudformation-scripts
+export VERSION=5.3
+```
+
+aws s3 cp ./dist/ s3://$DIST_OUTPUT_BUCKET-us-west-2/serverless-image-handler/$VERSION/ --recursive --exclude "*" --include "*.zip"
