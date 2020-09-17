@@ -1,69 +1,99 @@
+**_Important Notice:_**
+Due to a [change in the AWS Lambda execution environment](https://aws.amazon.com/blogs/compute/upcoming-updates-to-the-aws-lambda-execution-environment/), Serverless Image Handler v3 deployments are functionally broken. To address the issue we have released [minor version update v3.1.1](https://solutions-reference.s3.amazonaws.com/serverless-image-handler/v3.1.1/serverless-image-handler.template). We recommend all users of v3 to run cloudformation stack update with v3.1.1. Additionally, we suggest you to look at v4 of the solution and migrate to v4 if it addresses all of your use cases.
+
 # AWS Serverless Image Handler Lambda wrapper for SharpJS
 A solution to dynamically handle images on the fly, utilizing Sharp (https://sharp.pixelplumbing.com/en/stable/).
 Published version, additional details and documentation are available here: https://aws.amazon.com/solutions/serverless-image-handler/
 
 _Note:_ it is recommend to build the application binary on Amazon Linux.
 
-## Running unit tests for customization
-* Clone the repository, then make the desired code changes
-* Next, run unit tests to make sure added customization passes the tests
-```
-cd ./deployment
-chmod +x ./run-unit-tests.sh  \n
-./run-unit-tests.sh \n
-```
+## On This Page
+- [Architecture Overview](#architecture-overview)
+- [Creating a custom build](#creating-a-custom-build)
+- [External Contributors](#external-contributors)
+- [License](#license)
 
-## Building distributable for customization
-* Configure the bucket name of your target Amazon S3 distribution bucket
-```
-export TEMPLATE_OUTPUT_BUCKET=my-bucket-name # bucket where cfn template will reside
-export DIST_OUTPUT_BUCKET=my-bucket-name # bucket where customized code will reside
-export VERSION=my-version # version number for the customized code
-```
-_Note:_ You would have to create 2 buckets, one named 'my-bucket-name' and another regional bucket named 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. Also, the assets  in bucket should be publicly accessible.
+## Architecture Overview
+![Architecture](architecture.jpeg)
 
-```
-* Clone the github repo
+The AWS CloudFormation template deploys an Amazon CloudFront distribution, Amazon API Gateway REST API, and an AWS Lambda function. Amazon CloudFront provides a caching layer to reduce the cost of image processing and the latency of subsequent image delivery. The Amazon API Gateway provides endpoint resources and triggers the AWS Lambda function. The AWS Lambda function retrieves the image from the customer's Amazon Simple Storage Service (Amazon S3) bucket and uses Sharp to return a modified version of the image to the API Gateway. Additionally, the solution generates a CloudFront domain name that provides cached access to the image handler API.
+
+_**Note**:_ From v5.0, all AWS CloudFormation template resources are created be [AWS CDK](https://aws.amazon.com/cdk/) and [AWS Solutions Constructs](https://aws.amazon.com/solutions/constructs/). Since the AWS CloudFormation template resources have the same logical ID comparing to v4.x, it makes the solution upgradable mostly from v4.x to v5.
+
+## Creating a custom build
+The solution can be deployed through the CloudFormation template available on the solution home page.
+To make changes to the solution, download or clone this repo, update the source code and then run the deployment/build-s3-dist.sh script to deploy the updated Lambda code to an Amazon S3 bucket in your account.
+
+### Prerequisites:
+* [AWS Command Line Interface](https://aws.amazon.com/cli/)
+* Node.js 12.x or later
+
+### 1. Clone the repository
 ```bash
 git clone https://github.com/awslabs/serverless-image-handler.git
 ```
 
-* Navigate to the deployment folder
+### 2. Run unit tests for customization
+Run unit tests to make sure added customization passes the tests:
 ```bash
-cd serverless-image-handler/deployment
+cd ./deployment
+chmod +x ./run-unit-tests.sh
+./run-unit-tests.sh
 ```
 
-* Now build the distributable
+### 3. Declare environment variables
 ```bash
-./build-s3-dist.sh $DIST_OUTPUT_BUCKET $TEMPLATE_OUTPUT_BUCKET $VERSION
+export REGION=aws-region-code # the AWS region to launch the solution (e.g. us-east-1)
+export DIST_OUTPUT_BUCKET=my-bucket-name # bucket where customized code will reside
+export SOLUTION_NAME=my-solution-name # the solution name
+export VERSION=my-version # version number for the customized code
 ```
 
-* Deploy the distributable to an Amazon S3 bucket in your account. Note: you must have the AWS Command Line Interface installed.
+### 4. Create an Amazon S3 Bucket
+The CloudFormation template is configured to pull the Lambda deployment packages from Amazon S3 bucket in the region the template is being launched in. Create a bucket in the desired region with the region name appended to the name of the bucket.
 ```bash
-aws s3 cp ./dist/ s3://$DIST_OUTPUT_BUCKET-[region_name]/serverless-image-handler/$VERSION/ --recursive --exclude "*" --include "*.zip"
-aws s3 cp ./dist/serverless-image-handler.template s3://$TEMPLATE_OUTPUT_BUCKET/serverless-image-handler/$VERSION/
+aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
 ```
-_Note:_ In the above example, the solution template will expect the source code to be located in the my-bucket-name-[region_name] with prefix serverless-image-handler/my-version/serverless-image-handler.zip
 
-* Get the link of the serverless-image-handler.template uploaded to your Amazon S3 bucket.
-* Deploy the Serverless Image Handler solution to your account by launching a new AWS CloudFormation stack using the link of the serverless-image-handler.template
+### 5. Create the deployment packages
+Build the distributable:
 ```bash
-https://s3.amazonaws.com/my-bucket-name/serverless-image-handler/my-version/serverless-image-handler.template
+chmod +x ./build-s3-dist.sh
+./build-s3-dist.sh $DIST_OUTPUT_BUCKET $SOLUTION_NAME $VERSION
 ```
 
-Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-
-    http://aws.amazon.com/asl/
-
-or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions and limitations under the License.
-
-## FirsTable Settings
-```
-export TEMPLATE_OUTPUT_BUCKET=firsttable-cloudformation-scripts
-export DIST_OUTPUT_BUCKET=firsttable-cloudformation-scripts
-export VERSION=5.3
+Deploy the distributable to the Amazon S3 bucket in your account:
+```bash
+aws s3 sync ./regional-s3-assets/ s3://$DIST_OUTPUT_BUCKET-$REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
+aws s3 sync ./global-s3-assets/ s3://$DIST_OUTPUT_BUCKET-$REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
 ```
 
-aws s3 cp ./dist/ s3://$DIST_OUTPUT_BUCKET-us-west-2/serverless-image-handler/$VERSION/ --recursive --exclude "*" --include "*.zip"
+### 6. Launch the CloudFormation template.
+* Get the link of the `serverless-image-handler.template` uploaded to your Amazon S3 bucket.
+* Deploy the Serverless Image Handler solution to your account by launching a new AWS CloudFormation stack using the S3 link of the `serverless-image-handler.template`.
+
+## External Contributors
+- [@leviwilson](https://github.com/leviwilson) for [#117](https://github.com/awslabs/serverless-image-handler/pull/117)
+- [@rpong](https://github.com/rpong) for [#130](https://github.com/awslabs/serverless-image-handler/pull/130)
+- [@harriswong](https://github.com/harriswong) for [#138](https://github.com/awslabs/serverless-image-handler/pull/138)
+- [@ganey](https://github.com/ganey) for [#139](https://github.com/awslabs/serverless-image-handler/pull/139)
+- [@browniebroke](https://github.com/browniebroke) for [#151](https://github.com/awslabs/serverless-image-handler/pull/151), [#152](https://github.com/awslabs/serverless-image-handler/pull/152)
+- [@john-shaffer](https://github.com/john-shaffer) for [#158](https://github.com/awslabs/serverless-image-handler/pull/158)
+- [@toredash](https://github.com/toredash) for [#174](https://github.com/awslabs/serverless-image-handler/pull/174), [#195](https://github.com/awslabs/serverless-image-handler/pull/195)
+- [@lith-imad](https://github.com/lith-imad) for [#194](https://github.com/awslabs/serverless-image-handler/pull/194)
+
+***
+## License
+Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

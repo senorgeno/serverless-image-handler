@@ -1,12 +1,12 @@
 /*********************************************************************************************************************
- *  Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
+ *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
- *  Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance        *
+ *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance    *
  *  with the License. A copy of the License is located at                                                             *
  *                                                                                                                    *
- *      http://aws.amazon.com/asl/                                                                                    *
+ *      http://www.apache.org/licenses/LICENSE-2.0                                                                    *
  *                                                                                                                    *
- *  or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES *
  *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
@@ -19,7 +19,7 @@ let assert = require('assert');
 // ----------------------------------------------------------------------------
 describe('process()', function() {
     describe('001/thumborRequest', function() {
-        it(`Should pass if the proper edit translations are applied and in the 
+        it(`Should pass if the proper edit translations are applied and in the
             correct order`, function() {
             // Arrange
             const event = {
@@ -33,7 +33,8 @@ describe('process()', function() {
                 edits: {
                     resize: {
                         width: 200,
-                        height: 300
+                        height: 300,
+                        fit: 'inside'
                     },
                     grayscale: true
                 }
@@ -41,32 +42,12 @@ describe('process()', function() {
             assert.deepEqual(thumborMapping.edits, expectedResult.edits);
         });
     });
-    describe('002/thumborRequestWithCaseInsensitiveExtension', function() {
-        it(`Should pass if the proper edit translations are applied with case insensitive image`, function() {
+    describe('002/resize/fit-in', function() {
+        it(`Should pass if the proper edit translations are applied and in the
+            correct order`, function() {
             // Arrange
             const event = {
-                path : "/200x300/test-image-001.JPG"
-            }
-            // Act
-            const thumborMapping = new ThumborMapping();
-            thumborMapping.process(event);
-            // Assert
-            const expectedResult = {
-                edits: {
-                    resize: {
-                        width: 200,
-                        height: 300
-                    },
-                }
-            };
-            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
-        });
-    });
-    describe('003/thumborRequestDoesNotUseImageNameInProcessing', function() {
-        it(`Should pass if the proper edit translations are applied when an image has thumbor values in it's name`, function() {
-            // Arrange
-            const event = {
-                path : "/400x400/test-image-001-600x800.jpg"
+                path : "/fit-in/400x300/test-image-001.jpg"
             }
             // Act
             const thumborMapping = new ThumborMapping();
@@ -76,8 +57,119 @@ describe('process()', function() {
                 edits: {
                     resize: {
                         width: 400,
-                        height: 400
-                    },
+                        height: 300,
+                        fit: 'inside'
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
+    describe('003/resize/fit-in/noResizeValues', function() {
+        it(`Should pass if the proper edit translations are applied and in the
+            correct order`, function() {
+            // Arrange
+            const event = {
+                path : "/fit-in/test-image-001.jpg"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: { fit: 'inside' }
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
+    describe('004/resize/not-fit-in', function() {
+        it(`Should pass if the proper edit translations are applied and in the
+            correct order`, function() {
+            // Arrange
+            const event = {
+                path : "/400x300/test-image-001.jpg"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: {
+                        width: 400,
+                        height: 300
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
+    describe('005/resize/widthIsZero', function() {
+        it(`Should pass if the proper edit translations are applied and in the
+            correct order`, function() {
+            // Arrange
+            const event = {
+                path : "/0x300/test-image-001.jpg"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: {
+                        width: null,
+                        height: 300,
+                        fit: 'inside'
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
+    describe('006/resize/heightIsZero', function() {
+        it(`Should pass if the proper edit translations are applied and in the
+            correct order`, function() {
+            // Arrange
+            const event = {
+                path : "/400x0/test-image-001.jpg"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: {
+                        width: 400,
+                        height: null,
+                        fit: 'inside'
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
+    describe('007/resize/widthAndHeightAreZero', function() {
+        it(`Should pass if the proper edit translations are applied and in the
+            correct order`, function() {
+            // Arrange
+            const event = {
+                path : "/0x0/test-image-001.jpg"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: {
+                        width: null,
+                        height: null,
+                        fit: 'inside'
+                    }
                 }
             };
             assert.deepEqual(thumborMapping.edits, expectedResult.edits);
@@ -90,7 +182,7 @@ describe('process()', function() {
 // ----------------------------------------------------------------------------
 describe('parseCustomPath()', function() {
     describe('001/validPath', function() {
-        it(`Should pass if the proper edit translations are applied and in the 
+        it(`Should pass if the proper edit translations are applied and in the
             correct order`, function() {
             const event = {
                 path : '/filters-rotate(90)/filters-grayscale()/thumbor-image.jpg'
@@ -153,7 +245,7 @@ describe('parseCustomPath()', function() {
 // ----------------------------------------------------------------------------
 describe('mapFilter()', function() {
     describe('001/autojpg', function() {
-        it(`Should pass if the filter is successfully converted from 
+        it(`Should pass if the filter is successfully converted from
             Thumbor:autojpg()`, function() {
             // Arrange
             const edit = 'filters:autojpg()';
@@ -163,29 +255,29 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { toFormat: 'jpg' }
+                edits: { toFormat: 'jpeg' }
             };
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
     describe('002/background_color', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:background_color()`, function() {
             // Arrange
-            const edit = 'filters:background_color(#ffff)';
+            const edit = 'filters:background_color(ffff)';
             const filetype = 'jpg';
             // Act
             const thumborMapping = new ThumborMapping();
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { flatten: { background: '#ffff' }}
+                edits: { flatten: { background: {r: 255, g: 255, b: 255}}}
             };
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
     describe('003/blur/singleParameter', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:blur()`, function() {
             // Arrange
             const edit = 'filters:blur(60)';
@@ -201,7 +293,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('004/blur/doubleParameter', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:blur()`, function() {
             // Arrange
             const edit = 'filters:blur(60, 2)';
@@ -217,7 +309,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('005/convolution', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:convolution()`, function() {
             // Arrange
             const edit = 'filters:convolution(1;2;1;2;4;2;1;2;1,3,true)';
@@ -237,7 +329,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('006/equalize', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:equalize()`, function() {
             // Arrange
             const edit = 'filters:equalize()';
@@ -253,27 +345,27 @@ describe('mapFilter()', function() {
         });
     });
     describe('007/fill/resizeUndefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:fill()`, function() {
             // Arrange
-            const edit = 'filters:fill(#fff)';
+            const edit = 'filters:fill(fff)';
             const filetype = 'jpg';
             // Act
             const thumborMapping = new ThumborMapping();
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { resize: { background: '#fff' }}
+                edits: { resize: { background: { r: 255, g: 255, b: 255 }, fit: 'contain' }}
             };
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
 
     describe('008/fill/resizeDefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:fill()`, function() {
             // Arrange
-            const edit = 'filters:fill(#fff)';
+            const edit = 'filters:fill(fff)';
             const filetype = 'jpg';
             // Act
             const thumborMapping = new ThumborMapping();
@@ -281,13 +373,13 @@ describe('mapFilter()', function() {
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
-                edits: { resize: { background: '#fff' }}
+                edits: { resize: { background: { r: 255, g: 255, b: 255 }, fit: 'contain' }}
             };
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
     describe('009/format/supportedFileType', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:format()`, function() {
             // Arrange
             const edit = 'filters:format(png)';
@@ -319,7 +411,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('011/no_upscale/resizeUndefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:no_upscale()`, function() {
             // Arrange
             const edit = 'filters:no_upscale()';
@@ -331,9 +423,7 @@ describe('mapFilter()', function() {
             const expectedResult = {
                 edits: {
                     resize: {
-                        fit: 'inside',
-                        height: undefined,
-                        width: undefined
+                        withoutEnlargement: true
                     }
                 }
             };
@@ -341,22 +431,25 @@ describe('mapFilter()', function() {
         });
     });
     describe('012/no_upscale/resizeDefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:no_upscale()`, function() {
             // Arrange
             const edit = 'filters:no_upscale()';
             const filetype = 'jpg';
             // Act
             const thumborMapping = new ThumborMapping();
-            thumborMapping.edits.resize = {};
+            thumborMapping.edits.resize = {
+                height: 400,
+                width: 300
+            };
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
                 edits: {
                     resize: {
-                        fit: 'inside',
-                        height: undefined,
-                        width: undefined
+                        height: 400,
+                        width: 300,
+                        withoutEnlargement: true
                     }
                 }
             };
@@ -364,7 +457,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('013/proportion/resizeDefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:proportion()`, function() {
             // Arrange
             const edit = 'filters:proportion(0.3)';
@@ -391,7 +484,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('014/proportion/resizeUndefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:resize()`, function() {
             // Arrange
             const edit = 'filters:proportion(0.3)';
@@ -400,13 +493,13 @@ describe('mapFilter()', function() {
             const thumborMapping = new ThumborMapping();
             thumborMapping.mapFilter(edit, filetype);
             // Assert
-            const actualResult = (typeof(thumborMapping.edits.resize) !== undefined);
+            const actualResult = thumborMapping.edits.resize !== undefined;
             const expectedResult = true;
             assert.deepEqual(actualResult, expectedResult);
         });
     });
     describe('015/quality/jpg', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:quality()`, function() {
             // Arrange
             const edit = 'filters:quality(50)';
@@ -426,7 +519,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('016/quality/png', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:quality()`, function() {
             // Arrange
             const edit = 'filters:quality(50)';
@@ -446,7 +539,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('017/quality/webp', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:quality()`, function() {
             // Arrange
             const edit = 'filters:quality(50)';
@@ -466,7 +559,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('018/quality/tiff', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:quality()`, function() {
             // Arrange
             const edit = 'filters:quality(50)';
@@ -485,7 +578,27 @@ describe('mapFilter()', function() {
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('019/quality/other', function() {
+    describe('019/quality/heif', function() {
+        it(`Should pass if the filter is successfully translated from
+            Thumbor:quality()`, function() {
+            // Arrange
+            const edit = 'filters:quality(50)';
+            const filetype = 'heif';
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.mapFilter(edit, filetype);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    heif: {
+                        quality: 50
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping, expectedResult);
+        });
+    });
+    describe('020/quality/other', function() {
         it(`Should return undefined if an unsupported file type is provided`,
             function() {
             // Arrange
@@ -501,8 +614,8 @@ describe('mapFilter()', function() {
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('020/rgb', function() {
-        it(`Should pass if the filter is successfully translated from 
+    describe('021/rgb', function() {
+        it(`Should pass if the filter is successfully translated from
             Thumbor:rgb()`, function() {
             // Arrange
             const edit = 'filters:rgb(10, 10, 10)';
@@ -523,8 +636,8 @@ describe('mapFilter()', function() {
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('021/rotate', function() {
-        it(`Should pass if the filter is successfully translated from 
+    describe('022/rotate', function() {
+        it(`Should pass if the filter is successfully translated from
             Thumbor:rotate()`, function() {
             // Arrange
             const edit = 'filters:rotate(75)';
@@ -541,8 +654,8 @@ describe('mapFilter()', function() {
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('022/sharpen', function() {
-        it(`Should pass if the filter is successfully translated from 
+    describe('023/sharpen', function() {
+        it(`Should pass if the filter is successfully translated from
             Thumbor:sharpen()`, function() {
             // Arrange
             const edit = 'filters:sharpen(75, 5)';
@@ -559,8 +672,8 @@ describe('mapFilter()', function() {
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('023/stretch/default', function() {
-        it(`Should pass if the filter is successfully translated from 
+    describe('024/stretch/default', function() {
+        it(`Should pass if the filter is successfully translated from
             Thumbor:stretch()`, function() {
             // Arrange
             const edit = 'filters:stretch()';
@@ -577,90 +690,82 @@ describe('mapFilter()', function() {
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('024/stretch/resizeDefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+    describe('025/stretch/resizeDefined', function() {
+        it(`Should pass if the filter is successfully translated from
             Thumbor:stretch()`, function() {
             // Arrange
             const edit = 'filters:stretch()';
             const filetype = 'jpg';
             // Act
             const thumborMapping = new ThumborMapping();
-            thumborMapping.edits.resize = {};
+            thumborMapping.edits.resize = {
+                width: 300,
+                height: 400
+            };
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
                 edits: {
-                    resize: { fit: 'fill' }
+                    resize: {
+                        width: 300,
+                        height: 400,
+                        fit: 'fill'
+                    }
                 }
             };
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('025/stretch/sizingMethodUndefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+    describe('026/stretch/fit-in', function() {
+        it(`Should pass if the filter is successfully translated from
             Thumbor:stretch()`, function() {
             // Arrange
             const edit = 'filters:stretch()';
             const filetype = 'jpg';
             // Act
             const thumborMapping = new ThumborMapping();
-            thumborMapping.edits.resize = {};
-            thumborMapping.sizingMethod = undefined;
+            thumborMapping.edits.resize = {
+                fit: 'inside'
+            };
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
                 edits: {
-                    resize: { fit: 'fill' }
-                },
-                sizingMethod: undefined
+                    resize: { fit: 'inside' }
+                }
             };
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('026/stretch/sizingMethodNotFitIn', function() {
-        it(`Should pass if the filter is successfully translated from 
+    describe('027/stretch/fit-in/resizeDefined', function() {
+        it(`Should pass if the filter is successfully translated from
             Thumbor:stretch()`, function() {
             // Arrange
             const edit = 'filters:stretch()';
             const filetype = 'jpg';
             // Act
             const thumborMapping = new ThumborMapping();
-            thumborMapping.edits.resize = {};
-            thumborMapping.sizingMethod = "cover";
-            thumborMapping.mapFilter(edit, filetype);
-            // Assert
-            const expectedResult = {
-                edits: {
-                    resize: { fit: 'fill' }
-                },
-                sizingMethod: "cover"
+            thumborMapping.edits.resize = {
+                width: 400,
+                height: 300,
+                fit: 'inside'
             };
-            assert.deepEqual(thumborMapping, expectedResult);
-        });
-    });
-    describe('027/stretch/sizingMethodFitIn', function() {
-        it(`Should pass if the filter is successfully translated from 
-            Thumbor:stretch()`, function() {
-            // Arrange
-            const edit = 'filters:stretch()';
-            const filetype = 'jpg';
-            // Act
-            const thumborMapping = new ThumborMapping();
-            thumborMapping.edits.resize = {};
-            thumborMapping.sizingMethod = "fit-in";
             thumborMapping.mapFilter(edit, filetype);
             // Assert
             const expectedResult = {
                 edits: {
-                    resize: {}
-                },
-                sizingMethod: "fit-in"
+                    resize: {
+                        width: 400,
+                        height: 300,
+                        fit: 'inside'
+                    }
+                }
             };
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
     describe('028/strip_exif', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:strip_exif()`, function() {
             // Arrange
             const edit = 'filters:strip_exif()';
@@ -678,7 +783,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('029/strip_icc', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:strip_icc()`, function() {
             // Arrange
             const edit = 'filters:strip_icc()';
@@ -696,7 +801,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('030/upscale', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:upscale()`, function() {
             // Arrange
             const edit = 'filters:upscale()';
@@ -716,7 +821,7 @@ describe('mapFilter()', function() {
         });
     });
     describe('031/upscale/resizeNotUndefined', function() {
-        it(`Should pass if the filter is successfully translated from 
+        it(`Should pass if the filter is successfully translated from
             Thumbor:upscale()`, function() {
             // Arrange
             const edit = 'filters:upscale()';
@@ -736,7 +841,116 @@ describe('mapFilter()', function() {
             assert.deepEqual(thumborMapping, expectedResult);
         });
     });
-    describe('032/elseCondition', function() {
+    describe('032/watermark/positionDefined', function() {
+        it(`Should pass if the filter is successfully translated from
+            Thumbor:watermark()`, function() {
+            // Arrange
+            const edit = 'filters:watermark(bucket,key,100,100,0)';
+            const filetype = 'jpg';
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.mapFilter(edit, filetype);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    overlayWith: {
+                        bucket: 'bucket',
+                        key: 'key',
+                        alpha: '0',
+                        wRatio: undefined,
+                        hRatio: undefined,
+                        options: {
+                            left: '100',
+                            top: '100'
+                        }
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping, expectedResult);
+        });
+    });
+    describe('033/watermark/positionDefinedByPercentile', function() {
+        it(`Should pass if the filter is successfully translated from
+            Thumbor:watermark()`, function() {
+            // Arrange
+            const edit = 'filters:watermark(bucket,key,50p,30p,0)';
+            const filetype = 'jpg';
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.mapFilter(edit, filetype);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    overlayWith: {
+                        bucket: 'bucket',
+                        key: 'key',
+                        alpha: '0',
+                        wRatio: undefined,
+                        hRatio: undefined,
+                        options: {
+                            left: '50p',
+                            top: '30p'
+                        }
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping, expectedResult);
+        });
+    });
+    describe('034/watermark/positionDefinedWrong', function() {
+        it(`Should pass if the filter is successfully translated from
+            Thumbor:watermark()`, function() {
+            // Arrange
+            const edit = 'filters:watermark(bucket,key,x,x,0)';
+            const filetype = 'jpg';
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.mapFilter(edit, filetype);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    overlayWith: {
+                        bucket: 'bucket',
+                        key: 'key',
+                        alpha: '0',
+                        wRatio: undefined,
+                        hRatio: undefined,
+                        options: {}
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping, expectedResult);
+        });
+    });
+    describe('035/watermark/ratioDefined', function() {
+        it(`Should pass if the filter is successfully translated from
+            Thumbor:watermark()`, function() {
+            // Arrange
+            const edit = 'filters:watermark(bucket,key,100,100,0,10,10)';
+            const filetype = 'jpg';
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.mapFilter(edit, filetype);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    overlayWith: {
+                        bucket: 'bucket',
+                        key: 'key',
+                        alpha: '0',
+                        wRatio: '10',
+                        hRatio: '10',
+                        options: {
+                            left: '100',
+                            top: '100'
+                        }
+                    }
+                }
+            };
+            assert.deepEqual(thumborMapping, expectedResult);
+        });
+    });
+    describe('036/elseCondition', function() {
         it(`Should pass if undefined is returned for an unsupported filter`,
             function() {
             // Arrange

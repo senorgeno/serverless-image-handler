@@ -1,7 +1,13 @@
-# Navigate into the source folder
-cd ..
-cd source
+#!/bin/bash
 
-# Run the Jasmine test suite
-cd image-handler
+set -e
+
+current_dir=$PWD
+source_dir=$current_dir/../source
+
+cd $source_dir/constructs
+npm install
+npm test
+
+cd $source_dir/image-handler
 npm test

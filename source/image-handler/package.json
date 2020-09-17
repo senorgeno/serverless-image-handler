@@ -5,26 +5,27 @@
   "author": {
     "name": "aws-solutions-builder"
   },
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
-  "license": "ISC",
   "dependencies": {
-    "mocha": "^6.1.4",
-    "nyc": "^14.0.0",
-    "sharp": "^0.21.3",
-    "sinon": "^7.3.2"
+    "sharp": "^0.25.4",
+    "color": "3.1.2",
+    "color-name": "1.1.4"
   },
   "devDependencies": {
-    "aws-sdk": "^2.437.0",
-    "aws-sdk-mock": "^4.4.0"
+    "aws-sdk": "2.631.0",
+    "aws-sdk-mock": "^4.4.0",
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2",
+    "nyc": "^14.0.0"
   },
   "scripts": {
-    "pretest": "npm install",
+    "pretest": "npm run build:init && npm install",
     "test": "nyc --reporter=html --reporter=text mocha",
-    "build:init": "rm -rf package-lock.json && rm -rf dist && rm -rf node_modules",
-    "dockerbuild": "rm -rf node_modules/sharp && docker run -v \"$PWD\":/var/task lambci/lambda:build-nodejs8.10 npm install sharp",
-    "build:zip": "zip -rq image-handler.zip . -x template.yml",
+    "build:init": "rm -rf package-lock.json dist/ node_modules/",
+    "build:zip": "zip -rq image-handler.zip .",
     "build:dist": "mkdir dist && mv image-handler.zip dist/",
-    "build": "npm run build:init && npm install --production && npm run dockerbuild && npm run build:zip && npm run build:dist"
-  }
+    "build": "npm run build:init && npm install --arch=x64 --platform=linux --production && npm run build:zip && npm run build:dist"
+  },
+  "license": "Apache-2.0"
 }
