@@ -175,6 +175,27 @@ describe('process()', function() {
             assert.deepEqual(thumborMapping.edits, expectedResult.edits);
         });
     });
+    describe('008/thumborRequestWithCaseInsensitiveExtension', function() {
+        it(`Should pass if the proper edit translations are applied with case insensitive image`, function() {
+            // Arrange
+            const event = {
+                path : "/200x300/test-image-001.JPG"
+            }
+            // Act
+            const thumborMapping = new ThumborMapping();
+            thumborMapping.process(event);
+            // Assert
+            const expectedResult = {
+                edits: {
+                    resize: {
+                        width: 200,
+                        height: 300
+                    },
+                }
+            };
+            assert.deepEqual(thumborMapping.edits, expectedResult.edits);
+        });
+    });
 });
 
 // ----------------------------------------------------------------------------
