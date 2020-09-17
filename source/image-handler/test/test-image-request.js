@@ -606,7 +606,22 @@ describe('parseImageKey()', function() {
             }
         });
     });
-    describe('006/thumborRequestTypeWithCaseInsensitiveImageExtension', function() {
+    describe('006/thumborPublicRequestType', function() {
+        it(`Should pass if a public image key value is provided in the thumbor
+            request format`, function() {
+            // Arrange
+            const event = {
+                path : '/filters:rotate(90)/filters:grayscale()/public/as57ss/thumbor-image.jpg'
+            }
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.parseImageKey(event, 'Thumbor');
+            // Assert
+            const expectedResult = 'public/as57ss/thumbor-image.jpg';
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('007/thumborRequestTypeWithCaseInsensitiveImageExtension', function() {
         it(`Should pass if the method detects a thumbor request with a case insenstive image extension`, function() {
             // Arrange
             const event = {
